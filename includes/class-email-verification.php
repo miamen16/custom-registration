@@ -75,6 +75,8 @@ class CR_Email_Verification {
 		);
 
 		if ( ! wp_mail( $user->user_email, $subject, $message ) ) {
+			delete_user_meta( $user_id, self::META_TOKEN );
+			delete_user_meta( $user_id, self::META_EXPIRES );
 			return new WP_Error( 'verification_mail', __( 'Unable to send the verification email. Please try again later.', 'custom-registration' ) );
 		}
 
@@ -113,7 +115,7 @@ class CR_Email_Verification {
 		$result = $this->resend_verification( $identifier );
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ), 429 === (int) $result->get_error_code() ? 429 : 400 );
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 'rate_limited' === $result->get_error_code() ? 429 : 400 );
 		}
 
 		wp_send_json_success(
