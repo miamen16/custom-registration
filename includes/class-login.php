@@ -175,8 +175,9 @@ class CR_Login {
 		$redirect = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
 
 		$redirect = wp_validate_redirect( $redirect, home_url( '/' ) );
+		$redirect = apply_filters( 'cr_login_redirect_url', $redirect, $user );
 
-		return apply_filters( 'cr_login_redirect_url', $redirect, $user );
+		return wp_validate_redirect( $redirect, home_url( '/' ) );
 	}
 
 	private function process_forgot_password() {
