@@ -148,6 +148,7 @@ class CR_Account {
 
 		wp_set_password( $new_password, $user->ID );
 		wp_set_auth_cookie( $user->ID, false );
+		wp_destroy_current_session();
 
 		return true;
 	}
