@@ -11,6 +11,7 @@ A lightweight WordPress registration form built from scratch without third-party
 - Custom registration shortcode: `[custom_register_form]`
 - Custom login shortcode: `[custom_login_form]`
 - Custom forgot/reset password flow via `[custom_forgot_password_form]`
+- Custom account shortcode: `[custom_account]`
 - First name and last name
 - Username
 - Email
@@ -26,28 +27,31 @@ A lightweight WordPress registration form built from scratch without third-party
 - AJAX forgot password request
 - Custom password reset form
 - Password reset email with one-time WordPress reset keys
-- CSS loaded only on pages containing the shortcode
+- AJAX profile updates
+- Change password with current-password verification
+- AJAX logout
+- CSS and JS assets for the authentication/account flows
 
 ## Installation
 
 1. Clone or download this repository into `wp-content/plugins/custom-registration`.
 2. Activate **Custom Registration** from WordPress admin.
-3. Create a page.
-4. Add the shortcode:
+3. Create pages for the forms you need.
+4. Use the shortcodes:
 
 ```
 [custom_register_form]
+[custom_login_form]
+[custom_forgot_password_form]
+[custom_account]
 ```
 
-5. Publish the page.
+5. Publish the pages.
 
 ## Development roadmap
 
-- AJAX submission and inline validation
+- Conditional asset loading
 - Password strength indicator
-- Show/hide password
-- Login/logout
-- Password reset
 - Email verification
 - Admin settings
 - Elementor integration
