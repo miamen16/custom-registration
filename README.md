@@ -9,6 +9,8 @@ A lightweight WordPress registration form built from scratch without third-party
 ## Features
 
 - Custom registration shortcode: `[custom_register_form]`
+- Custom login shortcode: `[custom_login_form]`
+- Custom forgot/reset password flow via `[custom_forgot_password_form]`
 - First name and last name
 - Username
 - Email
@@ -19,6 +21,11 @@ A lightweight WordPress registration form built from scratch without third-party
 - Subscriber role for newly registered users
 - Automatic login after registration
 - Redirect after successful registration
+- AJAX login
+- Remember Me support
+- AJAX forgot password request
+- Custom password reset form
+- Password reset email with one-time WordPress reset keys
 - CSS loaded only on pages containing the shortcode
 
 ## Installation
