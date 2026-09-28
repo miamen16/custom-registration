@@ -84,7 +84,8 @@ class CR_Account {
 			return $errors;
 		}
 
-		$email_changed = strtolower( $email ) !== strtolower( $user->user_email );
+		$old_email = $user->user_email;
+		$email_changed = strtolower( $email ) !== strtolower( $old_email );
 
 		$result = wp_update_user(
 			array(
@@ -108,7 +109,7 @@ class CR_Account {
 				wp_update_user(
 					array(
 						'ID'         => $user->ID,
-						'user_email' => $user->user_email,
+						'user_email' => $old_email,
 					)
 				);
 				update_user_meta( $user->ID, CR_Email_Verification::META_VERIFIED, 1 );
