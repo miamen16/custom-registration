@@ -8,6 +8,8 @@ class CR_Registration {
 	private $errors;
 	private $old_data;
 	private $email_verification;
+	const REGISTRATION_MAX_ATTEMPTS = 10;
+	const REGISTRATION_LOCKOUT = 900;
 
 	public function __construct() {
 		$this->errors   = new WP_Error();
@@ -19,6 +21,19 @@ class CR_Registration {
 		add_shortcode( 'custom_register_form', array( $this, 'render_form' ) );
 		add_action( 'wp_ajax_nopriv_cr_register_user', array( $this, 'ajax_register' ) );
 		add_action( 'wp_ajax_nopriv_cr_check_availability', array( $this, 'ajax_check_availability' ) );
+	}
+
+	private function get_registration_throttle_key() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+		return 'cr_registration_' . md5( $ip );
+	}
+
+	private function registration_is_throttled() {
+		return false !== get_transient( $this->get_registration_throttle_key() );
+	}
+
+	private function record_registration_attempt() {
+		set_transient( $this->get_registration_throttle_key(), 1, self::REGISTRATION_LOCKOUT );
 	}
 
 	private function get_registration_data() {
@@ -89,6 +104,13 @@ class CR_Registration {
 			return;
 		}
 
+		if ( $this->registration_is_throttled() ) {
+			$this->errors->add( 'registration_throttled', __( 'Too many registration attempts. Please try again later.', 'custom-registration' ) );
+			return;
+		}
+
+		$this->record_registration_attempt();
+
 		$data = $this->get_registration_data();
 
 		$this->old_data = array(
@@ -125,6 +147,12 @@ class CR_Registration {
 		}
 
 		check_ajax_referer( 'cr_register', 'nonce' );
+
+		if ( $this->registration_is_throttled() ) {
+			wp_send_json_error( array( 'message' => __( 'Too many registration attempts. Please try again later.', 'custom-registration' ) ), 429 );
+		}
+
+		$this->record_registration_attempt();
 
 		$data   = $this->get_registration_data();
 		$errors = CR_Validator::validate( $data );
