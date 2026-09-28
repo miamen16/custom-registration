@@ -15,6 +15,7 @@ class CR_Registration {
 		add_action( 'init', array( $this, 'process_registration' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_shortcode( 'custom_register_form', array( $this, 'render_form' ) );
+		add_action( 'wp_ajax_nopriv_cr_register_user', array( $this, 'ajax_register' ) );
 	}
 
 	public function process_registration() {
@@ -97,6 +98,45 @@ class CR_Registration {
 		exit;
 	}
 
+	public function ajax_register() {
+		if ( is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'Already logged in.', 'custom-registration' ) ), 400 );
+		}
+
+		check_ajax_referer( 'cr_register', 'nonce' );
+
+		$data = array(
+			'first_name'       => sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) ),
+			'last_name'        => sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) ),
+			'username'         => sanitize_user( wp_unslash( $_POST['username'] ?? '' ), true ),
+			'email'            => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
+			'password'         => wp_unslash( $_POST['password'] ?? '' ),
+			'password_confirm' => wp_unslash( $_POST['password_confirm'] ?? '' ),
+		);
+
+		$errors = CR_Validator::validate( $data );
+
+		if ( $errors->has_errors() ) {
+			wp_send_json_error( array( 'errors' => $errors->get_error_messages() ), 422 );
+		}
+
+		$user_id = CR_User::create( $data );
+
+		if ( is_wp_error( $user_id ) ) {
+			wp_send_json_error( array( 'errors' => $user_id->get_error_messages() ), 400 );
+		}
+
+		wp_set_auth_cookie( $user_id, true );
+
+		$redirect_url = apply_filters( 'cr_registration_redirect_url', home_url( '/' ), $user_id );
+
+		wp_send_json_success(
+			array(
+				'url' => esc_url_raw( $redirect_url ),
+			)
+		);
+	}
+
 	public function enqueue_assets() {
 		if ( ! is_singular() ) {
 			return;
@@ -113,6 +153,15 @@ class CR_Registration {
 			CR_PLUGIN_URL . 'assets/css/registration.css',
 			array(),
 			CR_VERSION
+		);
+
+		wp_localize_script(
+			'cr-registration',
+			'crRegistration',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'cr_register' ),
+			)
 		);
 
 		wp_enqueue_script(
