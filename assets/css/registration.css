@@ -111,3 +111,31 @@
 .cr-submit.is-loading .cr-submit__loading {
 	display: inline;
 }
+
+
+.cr-field input[aria-invalid="true"] {
+	border-color: #d63638;
+}
+
+.cr-field input[aria-invalid="false"] {
+	border-color: #00a32a;
+}
+
+.cr-availability {
+	min-height: 20px;
+	margin-top: 5px;
+	font-size: 13px;
+}
+
+.cr-availability[data-state="checking"] {
+	color: #646970;
+}
+
+.cr-availability[data-state="available"] {
+	color: #008a20;
+}
+
+.cr-availability[data-state="unavailable"],
+.cr-availability[data-state="invalid"] {
+	color: #d63638;
+}
