@@ -1,0 +1,125 @@
+.cr-account {
+	max-width: 640px;
+	margin: 40px auto;
+}
+
+.cr-account__header {
+	margin-bottom: 24px;
+}
+
+.cr-account__header h2 {
+	margin: 0 0 6px;
+}
+
+.cr-account__header p {
+	margin: 0;
+}
+
+.cr-account__form {
+	display: grid;
+	gap: 16px;
+	margin-bottom: 28px;
+	padding: 24px;
+	border: 1px solid #d0d5d9;
+	border-radius: 6px;
+}
+
+.cr-account__form h3 {
+	margin: 0;
+}
+
+.cr-account-field label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+}
+
+.cr-account-field input {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #d0d5d9;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.cr-account-field input:focus {
+	outline: 2px solid transparent;
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.cr-account-field input[aria-invalid="true"] {
+	border-color: #d63638;
+}
+
+.cr-account-submit,
+.cr-account-logout {
+	padding: 11px 18px;
+	border: 0;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.cr-account-submit:disabled,
+.cr-account-logout:disabled {
+	cursor: wait;
+	opacity: 0.7;
+}
+
+.cr-account-submit__loading {
+	display: none;
+}
+
+.cr-account-submit.is-loading .cr-account-submit__text {
+	display: none;
+}
+
+.cr-account-submit.is-loading .cr-account-submit__loading {
+	display: inline;
+}
+
+.cr-account__messages {
+	margin-bottom: 16px;
+}
+
+.cr-account-errors,
+.cr-account-success {
+	padding: 12px 16px;
+	border-radius: 4px;
+}
+
+.cr-account-errors {
+	border: 1px solid #d63638;
+}
+
+.cr-account-success {
+	border: 1px solid #00a32a;
+}
+
+.cr-account-errors ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.cr-account__logout-form {
+	margin-top: 8px;
+}
+
+.cr-account-logout {
+	background: transparent;
+	border: 1px solid #d63638;
+}
+
+.cr-account-notice {
+	margin: 20px 0;
+}
+
+@media (max-width: 600px) {
+	.cr-account {
+		margin: 24px 16px;
+	}
+
+	.cr-account__form {
+		padding: 18px;
+	}
+}
