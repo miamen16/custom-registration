@@ -15,37 +15,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		<?php endif; ?>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-first-name"><?php esc_html_e( 'First Name', 'custom-registration' ); ?></label>
 			<input type="text" id="cr-first-name" name="first_name" value="<?php echo esc_attr( $data['first_name'] ?? '' ); ?>" autocomplete="given-name" required>
-		</p>
+		</div>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-last-name"><?php esc_html_e( 'Last Name', 'custom-registration' ); ?></label>
 			<input type="text" id="cr-last-name" name="last_name" value="<?php echo esc_attr( $data['last_name'] ?? '' ); ?>" autocomplete="family-name" required>
-		</p>
+		</div>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-username"><?php esc_html_e( 'Username', 'custom-registration' ); ?></label>
 			<input type="text" id="cr-username" name="username" value="<?php echo esc_attr( $data['username'] ?? '' ); ?>" autocomplete="username" required>
-		</p>
+		</div>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-email"><?php esc_html_e( 'Email', 'custom-registration' ); ?></label>
 			<input type="email" id="cr-email" name="email" value="<?php echo esc_attr( $data['email'] ?? '' ); ?>" autocomplete="email" required>
-		</p>
+		</div>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-password"><?php esc_html_e( 'Password', 'custom-registration' ); ?></label>
 			<div class="cr-password">
-				<input type="password" id="cr-password" name="password" autocomplete="new-password" minlength="8" required>
+				<input type="password" id="cr-password" name="password" autocomplete="new-password" minlength="8" aria-describedby="cr-password-strength" required>
 				<button type="button" class="cr-password__toggle" data-cr-toggle-password="cr-password" aria-pressed="false">
 					<?php esc_html_e( 'Show', 'custom-registration' ); ?>
 				</button>
 			</div>
-		</p>
+			<div id="cr-password-strength" class="cr-password-strength" aria-live="polite" data-strength="0">
+				<span class="cr-password-strength__text"></span>
+			</div>
+		</div>
 
-		<p class="cr-field">
+		<div class="cr-field">
 			<label for="cr-password-confirm"><?php esc_html_e( 'Confirm Password', 'custom-registration' ); ?></label>
 			<div class="cr-password">
 				<input type="password" id="cr-password-confirm" name="password_confirm" autocomplete="new-password" minlength="8" required>
@@ -53,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php esc_html_e( 'Show', 'custom-registration' ); ?>
 				</button>
 			</div>
-		</p>
+		</div>
 
 		<?php wp_nonce_field( 'cr_register', 'cr_register_nonce' ); ?>
 		<input type="hidden" name="cr_action" value="register">
