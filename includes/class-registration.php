@@ -18,16 +18,31 @@ class CR_Registration {
 	}
 
 	public function process_registration() {
+		if ( is_user_logged_in() ) {
+			return;
+		}
+
 		if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
 			return;
 		}
 
-		if ( empty( $_POST['cr_action'] ) || 'register' !== $_POST['cr_action'] ) {
+		$action = isset( $_POST['cr_action'] )
+			? sanitize_key( wp_unslash( $_POST['cr_action'] ) )
+			: '';
+
+		if ( 'register' !== $action ) {
 			return;
 		}
 
-		if ( ! isset( $_POST['cr_register_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['cr_register_nonce'] ) ), 'cr_register' ) ) {
-			$this->errors->add( 'nonce', __( 'Security check failed. Please try again.', 'custom-registration' ) );
+		$nonce = isset( $_POST['cr_register_nonce'] )
+			? sanitize_text_field( wp_unslash( $_POST['cr_register_nonce'] ) )
+			: '';
+
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'cr_register' ) ) {
+			$this->errors->add(
+				'nonce',
+				__( 'Security check failed. Please refresh the page and try again.', 'custom-registration' )
+			);
 			return;
 		}
 
@@ -53,7 +68,17 @@ class CR_Registration {
 			return;
 		}
 
-		$user_id = CR_User::create( $data );
+		$user_data = apply_filters( 'cr_registration_user_data', $data );
+
+		if ( ! is_array( $user_data ) ) {
+			$this->errors->add(
+				'registration_data',
+				__( 'Registration could not be completed. Please try again.', 'custom-registration' )
+			);
+			return;
+		}
+
+		$user_id = CR_User::create( $user_data );
 
 		if ( is_wp_error( $user_id ) ) {
 			$this->errors = $user_id;
@@ -62,7 +87,11 @@ class CR_Registration {
 
 		wp_set_auth_cookie( $user_id, true );
 
-		$redirect_url = apply_filters( 'cr_registration_redirect_url', home_url( '/' ), $user_id );
+		$redirect_url = apply_filters(
+			'cr_registration_redirect_url',
+			home_url( '/' ),
+			$user_id
+		);
 
 		wp_safe_redirect( $redirect_url );
 		exit;
