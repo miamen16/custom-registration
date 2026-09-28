@@ -139,3 +139,20 @@
 .cr-availability[data-state="invalid"] {
 	color: #d63638;
 }
+
+
+.cr-verification-notice {
+	padding: 16px;
+	margin-bottom: 16px;
+	border: 1px solid #00a32a;
+	border-radius: 4px;
+}
+
+.cr-verification-notice h3,
+.cr-verification-notice p {
+	margin: 0;
+}
+
+.cr-verification-notice h3 {
+	margin-bottom: 6px;
+}
