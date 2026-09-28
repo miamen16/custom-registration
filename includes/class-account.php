@@ -21,7 +21,11 @@ class CR_Account {
 	}
 
 	public function process_requests() {
-		if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' ) || ! is_user_logged_in() ) {
+		$request_method = isset( $_SERVER['REQUEST_METHOD'] )
+			? sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
+			: '';
+
+		if ( 'post' !== strtolower( $request_method ) || ! is_user_logged_in() ) {
 			return;
 		}
 
@@ -52,7 +56,7 @@ class CR_Account {
 	}
 
 	private function update_profile( $data ) {
-		$user = $this->current_user();
+		$user   = $this->current_user();
 		$errors = new WP_Error();
 
 		$first_name = sanitize_text_field( $data['first_name'] ?? '' );
@@ -282,7 +286,7 @@ class CR_Account {
 			'cr-account',
 			'crAccount',
 			array(
-				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'profileNonce' => wp_create_nonce( 'cr_update_profile' ),
 				'passwordNonce' => wp_create_nonce( 'cr_change_password' ),
 				'logoutNonce' => wp_create_nonce( 'cr_logout' ),
@@ -295,8 +299,8 @@ class CR_Account {
 			return '<p class="cr-account-notice">' . esc_html__( 'You must be logged in to view your account.', 'custom-registration' ) . '</p>';
 		}
 
-		$data = $this->get_profile_data();
-		$errors = $this->errors;
+		$data    = $this->get_profile_data();
+		$errors  = $this->errors;
 		$message = $this->message;
 
 		ob_start();
