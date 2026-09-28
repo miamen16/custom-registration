@@ -20,9 +20,15 @@ define( 'CR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once CR_PLUGIN_DIR . 'includes/class-validator.php';
 require_once CR_PLUGIN_DIR . 'includes/class-user.php';
 require_once CR_PLUGIN_DIR . 'includes/class-registration.php';
+require_once CR_PLUGIN_DIR . 'includes/class-login.php';
 
 function cr_init() {
 	return new CR_Registration();
 }
 
+function cr_login_init() {
+	return new CR_Login();
+}
+
 cr_init();
+cr_login_init();
