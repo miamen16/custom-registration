@@ -4,6 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <div class="cr-registration">
+	<?php if ( isset( $_GET['cr_verification_sent'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cr_verification_sent'] ) ) ) : ?>
+		<div class="cr-verification-notice" role="status">
+			<h3><?php esc_html_e( 'Check your email', 'custom-registration' ); ?></h3>
+			<p><?php esc_html_e( 'Registration was successful. We sent a verification link to your email address. Please verify your email before logging in.', 'custom-registration' ); ?></p>
+		</div>
+	<?php endif; ?>
+
 	<form class="cr-registration__form" method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php if ( $errors->has_errors() ) : ?>
 			<div class="cr-errors" role="alert">
