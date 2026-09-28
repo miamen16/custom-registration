@@ -21,6 +21,7 @@ require_once CR_PLUGIN_DIR . 'includes/class-validator.php';
 require_once CR_PLUGIN_DIR . 'includes/class-user.php';
 require_once CR_PLUGIN_DIR . 'includes/class-registration.php';
 require_once CR_PLUGIN_DIR . 'includes/class-login.php';
+require_once CR_PLUGIN_DIR . 'includes/class-account.php';
 
 function cr_init() {
 	return new CR_Registration();
@@ -30,5 +31,10 @@ function cr_login_init() {
 	return new CR_Login();
 }
 
+function cr_account_init() {
+	return new CR_Account();
+}
+
 cr_init();
 cr_login_init();
+cr_account_init();
