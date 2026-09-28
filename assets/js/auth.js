@@ -29,7 +29,35 @@
 				credentials: 'same-origin',
 				body: data
 			})
-			.then(function (response) { return response.json(); })
+			.then(function (response) {
+				return response.text().then(function (text) {
+					var body = text.trim();
+					var result;
+
+					try {
+						result = JSON.parse(body);
+					} catch (error) {
+						var start = body.indexOf('{');
+						var end = body.lastIndexOf('}');
+
+						if (start === -1 || end <= start) {
+							throw new Error('Invalid AJAX response (' + response.status + ').');
+						}
+
+						try {
+							result = JSON.parse(body.slice(start, end + 1));
+						} catch (parseError) {
+							throw new Error('Invalid AJAX response (' + response.status + ').');
+						}
+					}
+
+					if (!result || typeof result !== 'object') {
+						throw new Error('Invalid AJAX response.');
+					}
+
+					return result;
+				});
+			})
 			.then(function (result) {
 				if (result.success) {
 					if (successHandler) successHandler(result.data || {});
