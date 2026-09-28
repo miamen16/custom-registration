@@ -100,7 +100,11 @@ class CR_Registration {
 			return;
 		}
 
-		if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+		$request_method = isset( $_SERVER['REQUEST_METHOD'] )
+			? sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
+			: '';
+
+		if ( 'post' !== strtolower( $request_method ) ) {
 			return;
 		}
 
