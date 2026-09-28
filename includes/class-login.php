@@ -7,10 +7,9 @@ class CR_Login {
 
 	private $errors;
 	private $old_data;
-	const LOGIN_MAX_ATTEMPTS = 5;
-	const LOGIN_LOCKOUT = 900;
-	const RESET_REQUEST_LOCKOUT = 300;
-
+	const LOGIN_MAX_ATTEMPTS     = 5;
+	const LOGIN_LOCKOUT           = 900;
+	const RESET_REQUEST_LOCKOUT   = 300;
 
 	private function get_client_ip() {
 		return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
@@ -25,7 +24,7 @@ class CR_Login {
 	}
 
 	private function record_login_failure( $login ) {
-		$key = $this->get_login_throttle_key( $login );
+		$key   = $this->get_login_throttle_key( $login );
 		$count = $this->get_login_failures( $login ) + 1;
 		set_transient( $key, $count, self::LOGIN_LOCKOUT );
 	}
@@ -50,21 +49,6 @@ class CR_Login {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_shortcode( 'custom_login_form', array( $this, 'render_login_form' ) );
 		add_shortcode( 'custom_forgot_password_form', array( $this, 'render_forgot_password_form' ) );
-	}
-
-	public function check_verified_user( $user, $username, $password ) {
-		if ( is_wp_error( $user ) || ! $user instanceof WP_User ) {
-			return $user;
-		}
-
-		if ( '0' === (string) get_user_meta( $user->ID, '_cr_email_verified', true ) ) {
-			return new WP_Error(
-				'email_not_verified',
-				__( 'Please verify your email address before logging in.', 'custom-registration' )
-			);
-		}
-
-		return $user;
 	}
 
 	public function process_requests() {
@@ -200,7 +184,7 @@ class CR_Login {
 		}
 
 		$reset_page = isset( $_POST['reset_page'] ) ? esc_url_raw( wp_unslash( $_POST['reset_page'] ) ) : '';
-		$result = $this->send_password_reset( $identifier, $reset_page );
+		$result     = $this->send_password_reset( $identifier, $reset_page );
 
 		if ( is_wp_error( $result ) ) {
 			$this->errors = $result;
@@ -254,7 +238,7 @@ class CR_Login {
 			$reset_page = home_url( '/' );
 		}
 
-		$reset_base = apply_filters( 'cr_password_reset_url', home_url( '/' ), $user );
+		$reset_base = apply_filters( 'cr_password_reset_url', $reset_page, $user );
 		$reset_base = wp_validate_redirect( $reset_base, home_url( '/' ) );
 
 		$reset_url = add_query_arg(
@@ -308,7 +292,7 @@ class CR_Login {
 			'key'             => sanitize_text_field( wp_unslash( $_POST['key'] ?? $_GET['key'] ?? '' ) ),
 			'login'           => sanitize_text_field( wp_unslash( $_POST['login'] ?? $_GET['login'] ?? '' ) ),
 			'password'        => wp_unslash( $_POST['password'] ?? '' ),
-			'password_confirm'=> wp_unslash( $_POST['password_confirm'] ?? '' ),
+			'password_confirm' => wp_unslash( $_POST['password_confirm'] ?? '' ),
 		);
 	}
 
@@ -437,7 +421,7 @@ class CR_Login {
 			return '<p class="cr-auth-notice">' . esc_html__( 'You are already logged in.', 'custom-registration' ) . '</p>';
 		}
 
-		$data = $this->old_data;
+		$data   = $this->old_data;
 		$errors = $this->errors;
 		$redirect_to = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
 
