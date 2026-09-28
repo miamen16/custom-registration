@@ -27,6 +27,8 @@ A lightweight WordPress registration form built from scratch without third-party
 - AJAX forgot password request
 - Custom password reset form
 - Password reset email with one-time WordPress reset keys
+- Email verification with expiring one-time tokens
+- Registration blocked from login until email verification
 - AJAX profile updates
 - Change password with current-password verification
 - AJAX logout
@@ -47,6 +49,16 @@ A lightweight WordPress registration form built from scratch without third-party
 ```
 
 5. Publish the pages.
+
+## Email verification setup
+
+Create a page and add:
+
+```text
+[custom_verify_email]
+```
+
+Then point the verification email to that page using the `cr_email_verification_url` filter. The verification token expires after 24 hours and is removed after successful verification.
 
 ## Development roadmap
 
