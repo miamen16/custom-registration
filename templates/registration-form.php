@@ -27,12 +27,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div class="cr-field">
 			<label for="cr-username"><?php esc_html_e( 'Username', 'custom-registration' ); ?></label>
-			<input type="text" id="cr-username" name="username" value="<?php echo esc_attr( $data['username'] ?? '' ); ?>" autocomplete="username" required>
+			<input type="text" id="cr-username" name="username" value="<?php echo esc_attr( $data['username'] ?? '' ); ?>" autocomplete="username" aria-describedby="cr-username-availability" required>
+			<div id="cr-username-availability" class="cr-availability" data-cr-availability="username" aria-live="polite"></div>
 		</div>
 
 		<div class="cr-field">
 			<label for="cr-email"><?php esc_html_e( 'Email', 'custom-registration' ); ?></label>
-			<input type="email" id="cr-email" name="email" value="<?php echo esc_attr( $data['email'] ?? '' ); ?>" autocomplete="email" required>
+			<input type="email" id="cr-email" name="email" value="<?php echo esc_attr( $data['email'] ?? '' ); ?>" autocomplete="email" aria-describedby="cr-email-availability" required>
+			<div id="cr-email-availability" class="cr-availability" data-cr-availability="email" aria-live="polite"></div>
 		</div>
 
 		<div class="cr-field">
