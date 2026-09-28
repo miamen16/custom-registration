@@ -253,6 +253,16 @@ class CR_Account {
 	}
 
 	public function enqueue_assets() {
+		if ( ! is_singular() ) {
+			return;
+		}
+
+		global $post;
+
+		if ( ! $post || ! has_shortcode( $post->post_content, 'custom_account' ) ) {
+			return;
+		}
+
 		wp_enqueue_style(
 			'cr-account',
 			CR_PLUGIN_URL . 'assets/css/account.css',
