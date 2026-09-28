@@ -130,6 +130,10 @@ class CR_Login {
 		$user = wp_authenticate( $data['login'], $data['password'] );
 
 		if ( is_wp_error( $user ) ) {
+			if ( in_array( 'email_not_verified', $user->get_error_codes(), true ) ) {
+				return $user;
+			}
+
 			$this->record_login_failure( $data['login'] );
 			return new WP_Error( 'login_failed', __( 'Invalid username/email or password.', 'custom-registration' ) );
 		}
