@@ -16,3 +16,4 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/phpunit
+      - run: vendor/bin/phpcs --standard=phpcs.xml.dist
