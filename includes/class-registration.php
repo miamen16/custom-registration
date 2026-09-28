@@ -10,6 +10,8 @@ class CR_Registration {
 	private $email_verification;
 	const REGISTRATION_MAX_ATTEMPTS = 10;
 	const REGISTRATION_LOCKOUT = 900;
+	const AVAILABILITY_MAX_ATTEMPTS = 60;
+	const AVAILABILITY_LOCKOUT = 60;
 
 	public function __construct() {
 		$this->errors   = new WP_Error();
@@ -36,6 +38,21 @@ class CR_Registration {
 		$key   = $this->get_registration_throttle_key();
 		$count = (int) get_transient( $key ) + 1;
 		set_transient( $key, $count, self::REGISTRATION_LOCKOUT );
+	}
+
+	private function get_availability_throttle_key() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+		return 'cr_availability_' . md5( $ip );
+	}
+
+	private function availability_is_throttled() {
+		return (int) get_transient( $this->get_availability_throttle_key() ) >= self::AVAILABILITY_MAX_ATTEMPTS;
+	}
+
+	private function record_availability_attempt() {
+		$key   = $this->get_availability_throttle_key();
+		$count = (int) get_transient( $key ) + 1;
+		set_transient( $key, $count, self::AVAILABILITY_LOCKOUT );
 	}
 
 	private function get_registration_data() {
@@ -190,6 +207,12 @@ class CR_Registration {
 		}
 
 		check_ajax_referer( 'cr_register', 'nonce' );
+
+		if ( $this->availability_is_throttled() ) {
+			wp_send_json_error( array( 'message' => __( 'Too many availability checks. Please try again later.', 'custom-registration' ) ), 429 );
+		}
+
+		$this->record_availability_attempt();
 
 		$type  = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
 		$value = isset( $_POST['value'] ) ? wp_unslash( $_POST['value'] ) : '';
