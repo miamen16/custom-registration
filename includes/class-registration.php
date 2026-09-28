@@ -8,14 +8,15 @@ class CR_Registration {
 	private $errors;
 	private $old_data;
 	private $email_verification;
+
 	const REGISTRATION_MAX_ATTEMPTS = 10;
 	const REGISTRATION_LOCKOUT = 900;
 	const AVAILABILITY_MAX_ATTEMPTS = 60;
 	const AVAILABILITY_LOCKOUT = 60;
 
 	public function __construct() {
-		$this->errors   = new WP_Error();
-		$this->old_data = array();
+		$this->errors             = new WP_Error();
+		$this->old_data           = array();
 		$this->email_verification = new CR_Email_Verification();
 
 		add_action( 'init', array( $this, 'process_registration' ) );
@@ -191,12 +192,11 @@ class CR_Registration {
 		wp_send_json_success(
 			array(
 				'verification_required' => true,
-				'redirect' => esc_url_raw( add_query_arg( 'cr_verification_sent', '1', $verification_url ) ),
-				'message' => __( 'Registration successful. Please check your email to verify your account before logging in.', 'custom-registration' ),
+				'redirect'              => esc_url_raw( add_query_arg( 'cr_verification_sent', '1', $verification_url ) ),
+				'message'               => __( 'Registration successful. Please check your email to verify your account before logging in.', 'custom-registration' ),
 			)
 		);
 	}
-
 
 	public function ajax_check_availability() {
 		if ( is_user_logged_in() ) {
