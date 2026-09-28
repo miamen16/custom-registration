@@ -114,6 +114,14 @@ class CR_Registration {
 			array(),
 			CR_VERSION
 		);
+
+		wp_enqueue_script(
+			'cr-registration',
+			CR_PLUGIN_URL . 'assets/js/registration.js',
+			array(),
+			CR_VERSION,
+			true
+		);
 	}
 
 	public function render_form() {
