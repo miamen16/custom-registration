@@ -6,23 +6,65 @@
 			var password = form.querySelector('[name="password"]');
 			var confirmPassword = form.querySelector('[name="password_confirm"]');
 			var submit = form.querySelector('.cr-submit');
+			var strength = form.querySelector('.cr-password-strength');
+			var strengthText = strength ? strength.querySelector('.cr-password-strength__text') : null;
 
-			if (password && confirmPassword) {
-				confirmPassword.addEventListener('input', function () {
-					if (confirmPassword.value && password.value !== confirmPassword.value) {
-						confirmPassword.setCustomValidity('Passwords do not match.');
-					} else {
-						confirmPassword.setCustomValidity('');
-					}
-				});
+			function updatePasswordState() {
+				if (!password) {
+					return;
+				}
 
-				password.addEventListener('input', function () {
-					confirmPassword.dispatchEvent(new Event('input'));
-				});
+				var value = password.value;
+				var score = 0;
+
+				if (value.length >= 8) {
+					score++;
+				}
+				if (/[a-z]/.test(value)) {
+					score++;
+				}
+				if (/[A-Z]/.test(value)) {
+					score++;
+				}
+				if (/\d/.test(value)) {
+					score++;
+				}
+				if (/[^A-Za-z0-9]/.test(value)) {
+					score++;
+				}
+
+				if (strength) {
+					strength.setAttribute('data-strength', value ? String(score) : '0');
+				}
+
+				if (strengthText) {
+					var labels = ['', 'Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
+					strengthText.textContent = value ? labels[score] : '';
+				}
+
+				if (confirmPassword) {
+					confirmPassword.setCustomValidity(
+						confirmPassword.value && password.value !== confirmPassword.value
+							? 'Passwords do not match.'
+							: ''
+					);
+				}
+			}
+
+			if (password) {
+				password.addEventListener('input', updatePasswordState);
+			}
+
+			if (confirmPassword) {
+				confirmPassword.addEventListener('input', updatePasswordState);
 			}
 
 			form.addEventListener('submit', function (event) {
 				if (!window.crRegistration || !window.crRegistration.ajaxUrl) {
+					return;
+				}
+
+				if (!form.checkValidity()) {
 					return;
 				}
 
@@ -44,7 +86,12 @@
 					body: formData
 				})
 					.then(function (response) {
-						return response.json();
+						return response.json().then(function (result) {
+							if (!response.ok && !result) {
+								throw new Error('Request failed.');
+							}
+							return result;
+						});
 					})
 					.then(function (result) {
 						if (result.success && result.data && result.data.redirect) {
@@ -66,10 +113,11 @@
 						}
 
 						errorBox.innerHTML = '<ul>' + messages.map(function (message) {
-							return '<li>' + message.replace(/[&<>"]/g, function (char) {
+							return '<li>' + String(message).replace(/[&<>"]/g, function (char) {
 								return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char];
 							}) + '</li>';
 						}).join('') + '</ul>';
+						errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 					})
 					.catch(function () {
 						alert('Registration failed. Please try again.');
@@ -82,16 +130,6 @@
 						}
 					});
 			});
-
-			/* Legacy submit fallback.
-			form.addEventListener('submit', function () {
-				if (submit) {
-					submit.disabled = true;
-					submit.setAttribute('aria-disabled', 'true');
-					submit.classList.add('is-loading');
-				}
-			});
-			*/
 		});
 
 		document.querySelectorAll('[data-cr-toggle-password]').forEach(function (button) {
