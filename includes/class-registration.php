@@ -7,10 +7,12 @@ class CR_Registration {
 
 	private $errors;
 	private $old_data;
+	private $email_verification;
 
 	public function __construct() {
 		$this->errors   = new WP_Error();
 		$this->old_data = array();
+		$this->email_verification = new CR_Email_Verification();
 
 		add_action( 'init', array( $this, 'process_registration' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -46,7 +48,14 @@ class CR_Registration {
 			return $user_id;
 		}
 
-		wp_set_auth_cookie( $user_id, true );
+		$this->email_verification->mark_unverified( $user_id );
+
+		$verification = $this->email_verification->send_verification( $user_id );
+
+		if ( is_wp_error( $verification ) ) {
+			wp_delete_user( $user_id );
+			return $verification;
+		}
 
 		return $user_id;
 	}
@@ -102,13 +111,8 @@ class CR_Registration {
 			return;
 		}
 
-		$redirect_url = apply_filters(
-			'cr_registration_redirect_url',
-			home_url( '/' ),
-			$user_id
-		);
-
-		wp_safe_redirect( $redirect_url );
+		$verification_url = apply_filters( 'cr_email_verification_url', home_url( '/' ), get_userdata( $user_id ) );
+		wp_safe_redirect( add_query_arg( 'cr_verification_sent', '1', $verification_url ) );
 		exit;
 	}
 
@@ -135,11 +139,13 @@ class CR_Registration {
 			wp_send_json_error( array( 'errors' => $user_id->get_error_messages() ), 400 );
 		}
 
-		$redirect_url = apply_filters( 'cr_registration_redirect_url', home_url( '/' ), $user_id );
+		$verification_url = apply_filters( 'cr_email_verification_url', home_url( '/' ), get_userdata( $user_id ) );
 
 		wp_send_json_success(
 			array(
-				'redirect' => esc_url_raw( $redirect_url ),
+				'verification_required' => true,
+				'redirect' => esc_url_raw( add_query_arg( 'cr_verification_sent', '1', $verification_url ) ),
+				'message' => __( 'Registration successful. Please check your email to verify your account before logging in.', 'custom-registration' ),
 			)
 		);
 	}
