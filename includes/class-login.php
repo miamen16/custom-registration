@@ -352,6 +352,10 @@ class CR_Login {
 	}
 
 	public function render_login_form() {
+		if ( isset( $_GET['cr_forgot_password'] ) || isset( $_GET['cr_reset'] ) || isset( $_GET['cr_reset_complete'] ) ) {
+			return $this->render_forgot_password_form();
+		}
+
 		if ( is_user_logged_in() ) {
 			return '<p class="cr-auth-notice">' . esc_html__( 'You are already logged in.', 'custom-registration' ) . '</p>';
 		}
