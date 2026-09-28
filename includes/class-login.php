@@ -52,7 +52,11 @@ class CR_Login {
 	}
 
 	public function process_requests() {
-		if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+		$request_method = isset( $_SERVER['REQUEST_METHOD'] )
+			? sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
+			: '';
+
+		if ( 'post' !== strtolower( $request_method ) ) {
 			return;
 		}
 
@@ -156,7 +160,13 @@ class CR_Login {
 	}
 
 	private function get_login_redirect( $user ) {
-		$redirect = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
+		$redirect = '';
+
+		if ( isset( $_GET['redirect_to'] ) ) {
+			$redirect = esc_url_raw( wp_unslash( $_GET['redirect_to'] ) );
+		} elseif ( isset( $_POST['redirect_to'] ) ) {
+			$redirect = esc_url_raw( wp_unslash( $_POST['redirect_to'] ) );
+		}
 
 		$redirect = wp_validate_redirect( $redirect, home_url( '/' ) );
 		$redirect = apply_filters( 'cr_login_redirect_url', $redirect, $user );
@@ -244,8 +254,8 @@ class CR_Login {
 		$reset_url = add_query_arg(
 			array(
 				'cr_reset' => '1',
-				'key'      => rawurlencode( $key ),
-				'login'    => rawurlencode( $user->user_login ),
+				'key'      => $key,
+				'login'    => $user->user_login,
 			),
 			$reset_base
 		);
