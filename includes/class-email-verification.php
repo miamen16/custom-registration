@@ -190,7 +190,11 @@ class CR_Email_Verification {
 
 		global $post;
 
-		if ( ! $post || ( ! has_shortcode( $post->post_content, 'custom_resend_verification' ) && ! has_shortcode( $post->post_content, 'custom_verify_email' ) ) ) {
+		if ( ! $post || (
+			! has_shortcode( $post->post_content, 'custom_resend_verification' ) &&
+			! has_shortcode( $post->post_content, 'custom_verify_email' ) &&
+			! has_shortcode( $post->post_content, 'custom_register_form' )
+		) ) {
 			return;
 		}
 
