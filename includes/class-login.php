@@ -43,12 +43,28 @@ class CR_Login {
 		$this->old_data = array();
 
 		add_action( 'init', array( $this, 'process_requests' ) );
+		add_filter( 'authenticate', array( $this, 'check_verified_user' ), 30, 3 );
 		add_action( 'wp_ajax_nopriv_cr_login_user', array( $this, 'ajax_login' ) );
 		add_action( 'wp_ajax_nopriv_cr_request_password_reset', array( $this, 'ajax_request_password_reset' ) );
 		add_action( 'wp_ajax_nopriv_cr_reset_password', array( $this, 'ajax_reset_password' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_shortcode( 'custom_login_form', array( $this, 'render_login_form' ) );
 		add_shortcode( 'custom_forgot_password_form', array( $this, 'render_forgot_password_form' ) );
+	}
+
+	public function check_verified_user( $user, $username, $password ) {
+		if ( is_wp_error( $user ) || ! $user instanceof WP_User ) {
+			return $user;
+		}
+
+		if ( '0' === (string) get_user_meta( $user->ID, '_cr_email_verified', true ) ) {
+			return new WP_Error(
+				'email_not_verified',
+				__( 'Please verify your email address before logging in.', 'custom-registration' )
+			);
+		}
+
+		return $user;
 	}
 
 	public function process_requests() {
