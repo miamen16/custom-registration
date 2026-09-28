@@ -5,9 +5,89 @@
 		document.querySelectorAll('.cr-registration__form').forEach(function (form) {
 			var password = form.querySelector('[name="password"]');
 			var confirmPassword = form.querySelector('[name="password_confirm"]');
+			var username = form.querySelector('[name="username"]');
+			var email = form.querySelector('[name="email"]');
 			var submit = form.querySelector('.cr-submit');
 			var strength = form.querySelector('.cr-password-strength');
 			var strengthText = strength ? strength.querySelector('.cr-password-strength__text') : null;
+			var availabilityTimers = {};
+			var availabilityRequests = {};
+
+			function setAvailabilityState(input, status, state, message) {
+				if (!status) return;
+
+				status.textContent = message || '';
+				status.setAttribute('data-state', state || '');
+
+				if (input) {
+					input.setAttribute('aria-invalid', state === 'unavailable' || state === 'invalid' ? 'true' : 'false');
+					input.setCustomValidity(
+						state === 'unavailable' || state === 'invalid' ? (message || 'Please enter a valid value.') : ''
+					);
+				}
+			}
+
+			function checkAvailability(input, type) {
+				if (!input || !window.crRegistration || !window.crRegistration.ajaxUrl) return;
+
+				var status = form.querySelector('[data-cr-availability="' + type + '"]');
+				var value = input.value.trim();
+
+				if (availabilityTimers[type]) clearTimeout(availabilityTimers[type]);
+				if (availabilityRequests[type]) availabilityRequests[type].abort();
+
+				if (!value) {
+					setAvailabilityState(input, status, '', '');
+					return;
+				}
+
+				setAvailabilityState(input, status, 'checking', 'Checking...');
+
+				availabilityTimers[type] = setTimeout(function () {
+					var controller = window.AbortController ? new AbortController() : null;
+					availabilityRequests[type] = controller;
+
+					var formData = new FormData();
+					formData.append('action', 'cr_check_availability');
+					formData.append('nonce', window.crRegistration.nonce);
+					formData.append('type', type);
+					formData.append('value', value);
+
+					fetch(window.crRegistration.ajaxUrl, {
+						method: 'POST',
+						credentials: 'same-origin',
+						body: formData,
+						signal: controller ? controller.signal : undefined
+					})
+					.then(function (response) { return response.json(); })
+					.then(function (result) {
+						if (input.value.trim() !== value) return;
+
+						if (!result.success || !result.data) {
+							setAvailabilityState(input, status, 'invalid', 'Could not check availability.');
+							return;
+						}
+
+						if (!result.data.valid) {
+							setAvailabilityState(input, status, 'invalid', result.data.message);
+							return;
+						}
+
+						setAvailabilityState(
+							input,
+							status,
+							result.data.available ? 'available' : 'unavailable',
+							result.data.message
+						);
+					})
+					.catch(function (error) {
+						if (error && error.name === 'AbortError') return;
+						if (input.value.trim() === value) {
+							setAvailabilityState(input, status, 'invalid', 'Could not check availability.');
+						}
+					});
+				}, 500);
+			}
 
 			function updatePasswordState() {
 				if (!password) {
