@@ -250,7 +250,8 @@ class CR_Login {
 		);
 
 		if ( ! wp_mail( $user->user_email, $subject, $message ) ) {
-			return new WP_Error( 'reset_failed', __( 'Unable to send the password reset email. Please try again.', 'custom-registration' ) );
+			do_action( 'cr_password_reset_mail_failed', $user->ID );
+			return true;
 		}
 
 		return true;
