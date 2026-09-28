@@ -18,6 +18,38 @@ class CR_Registration {
 		add_action( 'wp_ajax_nopriv_cr_register_user', array( $this, 'ajax_register' ) );
 	}
 
+	private function get_registration_data() {
+		return array(
+			'first_name'       => sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) ),
+			'last_name'        => sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) ),
+			'username'         => sanitize_user( wp_unslash( $_POST['username'] ?? '' ), true ),
+			'email'            => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
+			'password'         => wp_unslash( $_POST['password'] ?? '' ),
+			'password_confirm' => wp_unslash( $_POST['password_confirm'] ?? '' ),
+		);
+	}
+
+	private function create_user( $data ) {
+		$user_data = apply_filters( 'cr_registration_user_data', $data );
+
+		if ( ! is_array( $user_data ) ) {
+			return new WP_Error(
+				'registration_data',
+				__( 'Registration could not be completed. Please try again.', 'custom-registration' )
+			);
+		}
+
+		$user_id = CR_User::create( $user_data );
+
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		wp_set_auth_cookie( $user_id, true );
+
+		return $user_id;
+	}
+
 	public function process_registration() {
 		if ( is_user_logged_in() ) {
 			return;
@@ -47,20 +79,13 @@ class CR_Registration {
 			return;
 		}
 
-		$this->old_data = array(
-			'first_name' => sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) ),
-			'last_name'  => sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) ),
-			'username'   => sanitize_user( wp_unslash( $_POST['username'] ?? '' ), true ),
-			'email'      => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
-		);
+		$data = $this->get_registration_data();
 
-		$data = array(
-			'first_name'       => $this->old_data['first_name'],
-			'last_name'        => $this->old_data['last_name'],
-			'username'         => $this->old_data['username'],
-			'email'            => $this->old_data['email'],
-			'password'         => wp_unslash( $_POST['password'] ?? '' ),
-			'password_confirm' => wp_unslash( $_POST['password_confirm'] ?? '' ),
+		$this->old_data = array(
+			'first_name' => $data['first_name'],
+			'last_name'  => $data['last_name'],
+			'username'   => $data['username'],
+			'email'      => $data['email'],
 		);
 
 		$this->errors = CR_Validator::validate( $data );
@@ -69,24 +94,12 @@ class CR_Registration {
 			return;
 		}
 
-		$user_data = apply_filters( 'cr_registration_user_data', $data );
-
-		if ( ! is_array( $user_data ) ) {
-			$this->errors->add(
-				'registration_data',
-				__( 'Registration could not be completed. Please try again.', 'custom-registration' )
-			);
-			return;
-		}
-
-		$user_id = CR_User::create( $user_data );
+		$user_id = $this->create_user( $data );
 
 		if ( is_wp_error( $user_id ) ) {
 			$this->errors = $user_id;
 			return;
 		}
-
-		wp_set_auth_cookie( $user_id, true );
 
 		$redirect_url = apply_filters(
 			'cr_registration_redirect_url',
@@ -100,39 +113,32 @@ class CR_Registration {
 
 	public function ajax_register() {
 		if ( is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'Already logged in.', 'custom-registration' ) ), 400 );
+			wp_send_json_error(
+				array( 'message' => __( 'Already logged in.', 'custom-registration' ) ),
+				400
+			);
 		}
 
 		check_ajax_referer( 'cr_register', 'nonce' );
 
-		$data = array(
-			'first_name'       => sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) ),
-			'last_name'        => sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) ),
-			'username'         => sanitize_user( wp_unslash( $_POST['username'] ?? '' ), true ),
-			'email'            => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
-			'password'         => wp_unslash( $_POST['password'] ?? '' ),
-			'password_confirm' => wp_unslash( $_POST['password_confirm'] ?? '' ),
-		);
-
+		$data   = $this->get_registration_data();
 		$errors = CR_Validator::validate( $data );
 
 		if ( $errors->has_errors() ) {
 			wp_send_json_error( array( 'errors' => $errors->get_error_messages() ), 422 );
 		}
 
-		$user_id = CR_User::create( $data );
+		$user_id = $this->create_user( $data );
 
 		if ( is_wp_error( $user_id ) ) {
 			wp_send_json_error( array( 'errors' => $user_id->get_error_messages() ), 400 );
 		}
 
-		wp_set_auth_cookie( $user_id, true );
-
 		$redirect_url = apply_filters( 'cr_registration_redirect_url', home_url( '/' ), $user_id );
 
 		wp_send_json_success(
 			array(
-				'url' => esc_url_raw( $redirect_url ),
+				'redirect' => esc_url_raw( $redirect_url ),
 			)
 		);
 	}
