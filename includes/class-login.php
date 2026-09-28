@@ -42,7 +42,6 @@ class CR_Login {
 		$this->old_data = array();
 
 		add_action( 'init', array( $this, 'process_requests' ) );
-		add_filter( 'authenticate', array( $this, 'check_verified_user' ), 30, 3 );
 		add_action( 'wp_ajax_nopriv_cr_login_user', array( $this, 'ajax_login' ) );
 		add_action( 'wp_ajax_nopriv_cr_request_password_reset', array( $this, 'ajax_request_password_reset' ) );
 		add_action( 'wp_ajax_nopriv_cr_reset_password', array( $this, 'ajax_reset_password' ) );
@@ -127,15 +126,6 @@ class CR_Login {
 		}
 
 		$this->clear_login_failures( $data['login'] );
-
-		$verification_status = get_user_meta( $user->ID, '_cr_email_verified', true );
-
-		if ( '0' === (string) $verification_status ) {
-			return new WP_Error(
-				'email_not_verified',
-				__( 'Please verify your email address before logging in.', 'custom-registration' )
-			);
-		}
 
 		wp_set_auth_cookie( $user->ID, $data['remember'] );
 
