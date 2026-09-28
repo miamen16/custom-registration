@@ -37,19 +37,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<p class="cr-field">
 			<label for="cr-password"><?php esc_html_e( 'Password', 'custom-registration' ); ?></label>
-			<input type="password" id="cr-password" name="password" autocomplete="new-password" required>
+			<div class="cr-password">
+				<input type="password" id="cr-password" name="password" autocomplete="new-password" minlength="8" required>
+				<button type="button" class="cr-password__toggle" data-cr-toggle-password="cr-password" aria-pressed="false">
+					<?php esc_html_e( 'Show', 'custom-registration' ); ?>
+				</button>
+			</div>
 		</p>
 
 		<p class="cr-field">
 			<label for="cr-password-confirm"><?php esc_html_e( 'Confirm Password', 'custom-registration' ); ?></label>
-			<input type="password" id="cr-password-confirm" name="password_confirm" autocomplete="new-password" required>
+			<div class="cr-password">
+				<input type="password" id="cr-password-confirm" name="password_confirm" autocomplete="new-password" minlength="8" required>
+				<button type="button" class="cr-password__toggle" data-cr-toggle-password="cr-password-confirm" aria-pressed="false">
+					<?php esc_html_e( 'Show', 'custom-registration' ); ?>
+				</button>
+			</div>
 		</p>
 
 		<?php wp_nonce_field( 'cr_register', 'cr_register_nonce' ); ?>
 		<input type="hidden" name="cr_action" value="register">
 
 		<button type="submit" class="cr-submit">
-			<?php esc_html_e( 'Create Account', 'custom-registration' ); ?>
+			<span class="cr-submit__text"><?php esc_html_e( 'Create Account', 'custom-registration' ); ?></span>
+			<span class="cr-submit__loading" aria-hidden="true"><?php esc_html_e( 'Creating account...', 'custom-registration' ); ?></span>
 		</button>
 	</form>
 </div>
