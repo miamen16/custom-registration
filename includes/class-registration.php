@@ -29,11 +29,13 @@ class CR_Registration {
 	}
 
 	private function registration_is_throttled() {
-		return false !== get_transient( $this->get_registration_throttle_key() );
+		return (int) get_transient( $this->get_registration_throttle_key() ) >= self::REGISTRATION_MAX_ATTEMPTS;
 	}
 
 	private function record_registration_attempt() {
-		set_transient( $this->get_registration_throttle_key(), 1, self::REGISTRATION_LOCKOUT );
+		$key   = $this->get_registration_throttle_key();
+		$count = (int) get_transient( $key ) + 1;
+		set_transient( $key, $count, self::REGISTRATION_LOCKOUT );
 	}
 
 	private function get_registration_data() {
