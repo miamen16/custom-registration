@@ -108,9 +108,7 @@ class CR_Login {
 	private function get_login_redirect( $user ) {
 		$redirect = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
 
-		if ( ! $redirect ) {
-			$redirect = home_url( '/' );
-		}
+		$redirect = wp_validate_redirect( $redirect, home_url( '/' ) );
 
 		return apply_filters( 'cr_login_redirect_url', $redirect, $user );
 	}
@@ -167,7 +165,7 @@ class CR_Login {
 		$user = $this->find_user( $identifier );
 
 		if ( ! $user ) {
-			return new WP_Error( 'reset_failed', __( 'If an account matches that information, a password reset email has been sent.', 'custom-registration' ) );
+			return true;
 		}
 
 		$key = get_password_reset_key( $user );
