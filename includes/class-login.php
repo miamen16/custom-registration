@@ -83,6 +83,15 @@ class CR_Login {
 			return new WP_Error( 'login_failed', __( 'Invalid username/email or password.', 'custom-registration' ) );
 		}
 
+		$verification_status = get_user_meta( $user->ID, '_cr_email_verified', true );
+
+		if ( '0' === (string) $verification_status ) {
+			return new WP_Error(
+				'email_not_verified',
+				__( 'Please verify your email address before logging in.', 'custom-registration' )
+			);
+		}
+
 		wp_set_auth_cookie( $user->ID, $data['remember'] );
 
 		return $user;
