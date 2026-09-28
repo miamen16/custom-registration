@@ -41,7 +41,7 @@ class CR_Validator {
 			$errors->add( 'password_short', __( 'Password must be at least 8 characters.', 'custom-registration' ) );
 		}
 
-		if ( ! hash_equals( $password, $confirm ) ) {
+		if ( $password !== $confirm ) {
 			$errors->add( 'password_mismatch', __( 'Passwords do not match.', 'custom-registration' ) );
 		}
 
