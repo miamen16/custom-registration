@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="tests/bootstrap.php">
+<phpunit bootstrap="test-bootstrap.php">
   <testsuites>
     <testsuite name="Custom Registration">
-      <directory>tests</directory>
+      <file>test-validator.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
