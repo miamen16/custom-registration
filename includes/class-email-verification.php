@@ -11,10 +11,28 @@ class CR_Email_Verification {
 	const RESEND_LIMIT  = 300;
 
 	public function __construct() {
+		add_filter( 'authenticate', array( $this, 'check_verified_user' ), 30, 3 );
 		add_shortcode( 'custom_verify_email', array( $this, 'render_verification' ) );
 		add_shortcode( 'custom_resend_verification', array( $this, 'render_resend_form' ) );
 		add_action( 'wp_ajax_nopriv_cr_resend_verification', array( $this, 'ajax_resend_verification' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+	}
+
+	public function check_verified_user( $user, $username, $password ) {
+		if ( ! $user instanceof WP_User ) {
+			return $user;
+		}
+
+		$status = get_user_meta( $user->ID, self::META_VERIFIED, true );
+
+		if ( '0' === (string) $status ) {
+			return new WP_Error(
+				'email_not_verified',
+				__( 'Please verify your email address before logging in.', 'custom-registration' )
+			);
+		}
+
+		return $user;
 	}
 
 	public function mark_unverified( $user_id ) {
