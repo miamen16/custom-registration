@@ -8,6 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="cr-verification-notice" role="status">
 			<h3><?php esc_html_e( 'Check your email', 'custom-registration' ); ?></h3>
 			<p><?php esc_html_e( 'Registration was successful. We sent a verification link to your email address. Please verify your email before logging in.', 'custom-registration' ); ?></p>
+			<p><?php esc_html_e( 'Did not receive it? You can request another verification email below.', 'custom-registration' ); ?></p>
+			<?php echo do_shortcode( '[custom_resend_verification]' ); ?>
 		</div>
 	<?php endif; ?>
 
