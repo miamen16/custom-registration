@@ -20,8 +20,7 @@ A lightweight WordPress registration form built from scratch without third-party
 - Server-side validation
 - Duplicate username/email checks
 - Subscriber role for newly registered users
-- Automatic login after registration
-- Redirect after successful registration
+- Email verification before first login
 - AJAX login
 - Remember Me support
 - AJAX forgot password request
@@ -50,6 +49,8 @@ A lightweight WordPress registration form built from scratch without third-party
 [custom_login_form]
 [custom_forgot_password_form]
 [custom_account]
+[custom_verify_email]
+[custom_resend_verification]
 ```
 
 5. Publish the pages.
@@ -67,9 +68,7 @@ Then point the verification email to that page using the `cr_email_verification_
 
 ## Development roadmap
 
-- Conditional asset loading
-- Password strength indicator
-- Email verification
 - Admin settings
 - Elementor integration
-- Automated tests and additional security hardening
+- Expanded WordPress integration tests
+- WordPress Coding Standards (WPCS) checks
