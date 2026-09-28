@@ -254,13 +254,16 @@ class CR_Login {
 			$reset_page = home_url( '/' );
 		}
 
+		$reset_base = apply_filters( 'cr_password_reset_url', home_url( '/' ), $user );
+		$reset_base = wp_validate_redirect( $reset_base, home_url( '/' ) );
+
 		$reset_url = add_query_arg(
 			array(
-			'cr_reset' => '1',
-			'key'      => rawurlencode( $key ),
-			'login'    => rawurlencode( $user->user_login ),
-		),
-		apply_filters( 'cr_password_reset_url', home_url( '/' ), $user )
+				'cr_reset' => '1',
+				'key'      => rawurlencode( $key ),
+				'login'    => rawurlencode( $user->user_login ),
+			),
+			$reset_base
 		);
 
 		$subject = __( 'Password Reset', 'custom-registration' );
