@@ -16,6 +16,7 @@ class CR_Registration {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_shortcode( 'custom_register_form', array( $this, 'render_form' ) );
 		add_action( 'wp_ajax_nopriv_cr_register_user', array( $this, 'ajax_register' ) );
+		add_action( 'wp_ajax_nopriv_cr_check_availability', array( $this, 'ajax_check_availability' ) );
 	}
 
 	private function get_registration_data() {
@@ -140,6 +141,78 @@ class CR_Registration {
 			array(
 				'redirect' => esc_url_raw( $redirect_url ),
 			)
+		);
+	}
+
+
+	public function ajax_check_availability() {
+		if ( is_user_logged_in() ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Already logged in.', 'custom-registration' ) ),
+				400
+			);
+		}
+
+		check_ajax_referer( 'cr_register', 'nonce' );
+
+		$type  = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
+		$value = isset( $_POST['value'] ) ? wp_unslash( $_POST['value'] ) : '';
+
+		if ( 'username' === $type ) {
+			$value = sanitize_user( $value, true );
+
+			if ( '' === $value || ! validate_username( $value ) ) {
+				wp_send_json_success(
+					array(
+						'available' => false,
+						'valid'     => false,
+						'message'   => __( 'Please enter a valid username.', 'custom-registration' ),
+					)
+				);
+			}
+
+			$exists = username_exists( $value );
+
+			wp_send_json_success(
+				array(
+					'available' => ! $exists,
+					'valid'     => true,
+					'message'   => $exists
+						? __( 'This username is already registered.', 'custom-registration' )
+						: __( 'Username is available.', 'custom-registration' ),
+				)
+			);
+		}
+
+		if ( 'email' === $type ) {
+			$value = sanitize_email( $value );
+
+			if ( '' === $value || ! is_email( $value ) ) {
+				wp_send_json_success(
+					array(
+						'available' => false,
+						'valid'     => false,
+						'message'   => __( 'Please enter a valid email address.', 'custom-registration' ),
+					)
+				);
+			}
+
+			$exists = email_exists( $value );
+
+			wp_send_json_success(
+				array(
+					'available' => ! $exists,
+					'valid'     => true,
+					'message'   => $exists
+						? __( 'This email address is already registered.', 'custom-registration' )
+						: __( 'Email address is available.', 'custom-registration' ),
+				)
+			);
+		}
+
+		wp_send_json_error(
+			array( 'message' => __( 'Invalid availability check.', 'custom-registration' ) ),
+			400
 		);
 	}
 
