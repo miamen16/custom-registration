@@ -134,7 +134,8 @@ class CR_Login {
 			return;
 		}
 
-		$result = $this->send_password_reset( $identifier );
+		$reset_page = isset( $_POST['reset_page'] ) ? esc_url_raw( wp_unslash( $_POST['reset_page'] ) ) : '';
+		$result = $this->send_password_reset( $identifier, $reset_page );
 
 		if ( is_wp_error( $result ) ) {
 			$this->errors = $result;
@@ -145,12 +146,24 @@ class CR_Login {
 		exit;
 	}
 
+	private function get_safe_local_url( $url ) {
+		if ( ! $url ) {
+			return '';
+		}
+
+		$url = esc_url_raw( $url );
+		$site_host = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
+		$url_host  = wp_parse_url( $url, PHP_URL_HOST );
+
+		return $url_host && $site_host && strtolower( $url_host ) === strtolower( $site_host ) ? $url : '';
+	}
+
 	private function find_user( $identifier ) {
 		$user = is_email( $identifier ) ? get_user_by( 'email', $identifier ) : get_user_by( 'login', $identifier );
 		return $user;
 	}
 
-	private function send_password_reset( $identifier ) {
+	private function send_password_reset( $identifier, $reset_page = '' ) {
 		$user = $this->find_user( $identifier );
 
 		if ( ! $user ) {
@@ -161,6 +174,11 @@ class CR_Login {
 
 		if ( is_wp_error( $key ) ) {
 			return new WP_Error( 'reset_failed', __( 'Unable to create a password reset request. Please try again.', 'custom-registration' ) );
+		}
+
+		$reset_page = $this->get_safe_local_url( $reset_page );
+		if ( ! $reset_page ) {
+			$reset_page = home_url( '/' );
 		}
 
 		$reset_url = add_query_arg(
@@ -194,7 +212,8 @@ class CR_Login {
 		check_ajax_referer( 'cr_forgot_password', 'nonce' );
 
 		$identifier = sanitize_text_field( wp_unslash( $_POST['user_login'] ?? '' ) );
-		$result     = $this->send_password_reset( $identifier );
+		$reset_page = isset( $_POST['reset_page'] ) ? esc_url_raw( wp_unslash( $_POST['reset_page'] ) ) : '';
+		$result     = $this->send_password_reset( $identifier, $reset_page );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'errors' => $result->get_error_messages() ), 400 );
@@ -353,6 +372,12 @@ class CR_Login {
 
 		$data = array();
 		$errors = $this->errors;
+
+		if ( isset( $_GET['cr_forgot_password'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cr_forgot_password'] ) ) && ! isset( $_GET['cr_reset'] ) ) {
+			ob_start();
+			include CR_PLUGIN_DIR . 'templates/forgot-password-form.php';
+			return ob_get_clean();
+		}
 		$reset_user = null;
 		$reset_mode = isset( $_GET['cr_reset'], $_GET['key'], $_GET['login'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cr_reset'] ) );
 
