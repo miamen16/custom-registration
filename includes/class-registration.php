@@ -155,6 +155,14 @@ class CR_Registration {
 			CR_VERSION
 		);
 
+		wp_enqueue_script(
+			'cr-registration',
+			CR_PLUGIN_URL . 'assets/js/registration.js',
+			array(),
+			CR_VERSION,
+			true
+		);
+
 		wp_localize_script(
 			'cr-registration',
 			'crRegistration',
@@ -162,14 +170,6 @@ class CR_Registration {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'cr_register' ),
 			)
-		);
-
-		wp_enqueue_script(
-			'cr-registration',
-			CR_PLUGIN_URL . 'assets/js/registration.js',
-			array(),
-			CR_VERSION,
-			true
 		);
 	}
 
