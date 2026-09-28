@@ -84,17 +84,40 @@ class CR_Account {
 			return $errors;
 		}
 
+		$email_changed = strtolower( $email ) !== strtolower( $user->user_email );
+
 		$result = wp_update_user(
 			array(
-			'ID'         => $user->ID,
-			'first_name' => $first_name,
-			'last_name'  => $last_name,
-			'user_email' => $email,
-		)
+				'ID'         => $user->ID,
+				'first_name' => $first_name,
+				'last_name'  => $last_name,
+				'user_email' => $email,
+			)
 		);
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
+		}
+
+		if ( $email_changed ) {
+			$verification = new CR_Email_Verification();
+			$verification->mark_unverified( $user->ID );
+			$verification_result = $verification->send_verification( $user->ID );
+
+			if ( is_wp_error( $verification_result ) ) {
+				wp_update_user(
+					array(
+						'ID'         => $user->ID,
+						'user_email' => $user->user_email,
+					)
+				);
+				update_user_meta( $user->ID, CR_Email_Verification::META_VERIFIED, 1 );
+
+				return new WP_Error(
+					'email_verification_mail',
+					__( 'Your profile was not updated because the verification email could not be sent.', 'custom-registration' )
+				);
+			}
 		}
 
 		return true;
