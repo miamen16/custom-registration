@@ -1,0 +1,8 @@
+{
+  "name": "miamen16/custom-registration",
+  "description": "A lightweight custom WordPress registration plugin.",
+  "type": "wordpress-plugin",
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  }
+}
