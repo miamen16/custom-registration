@@ -7,6 +7,36 @@ class CR_Login {
 
 	private $errors;
 	private $old_data;
+	const LOGIN_MAX_ATTEMPTS = 5;
+	const LOGIN_LOCKOUT = 900;
+	const RESET_REQUEST_LOCKOUT = 300;
+
+
+	private function get_client_ip() {
+		return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+	}
+
+	private function get_login_throttle_key( $login ) {
+		return 'cr_login_fail_' . md5( strtolower( trim( $login ) ) . '|' . $this->get_client_ip() );
+	}
+
+	private function get_login_failures( $login ) {
+		return (int) get_transient( $this->get_login_throttle_key( $login ) );
+	}
+
+	private function record_login_failure( $login ) {
+		$key = $this->get_login_throttle_key( $login );
+		$count = $this->get_login_failures( $login ) + 1;
+		set_transient( $key, $count, self::LOGIN_LOCKOUT );
+	}
+
+	private function clear_login_failures( $login ) {
+		delete_transient( $this->get_login_throttle_key( $login ) );
+	}
+
+	private function get_reset_throttle_key() {
+		return 'cr_reset_request_' . md5( $this->get_client_ip() );
+	}
 
 	public function __construct() {
 		$this->errors   = new WP_Error();
@@ -77,11 +107,18 @@ class CR_Login {
 			return new WP_Error( 'login_required', __( 'Username/email and password are required.', 'custom-registration' ) );
 		}
 
+		if ( $this->get_login_failures( $data['login'] ) >= self::LOGIN_MAX_ATTEMPTS ) {
+			return new WP_Error( 'login_throttled', __( 'Too many failed login attempts. Please try again later.', 'custom-registration' ) );
+		}
+
 		$user = wp_authenticate( $data['login'], $data['password'] );
 
 		if ( is_wp_error( $user ) ) {
+			$this->record_login_failure( $data['login'] );
 			return new WP_Error( 'login_failed', __( 'Invalid username/email or password.', 'custom-registration' ) );
 		}
+
+		$this->clear_login_failures( $data['login'] );
 
 		$verification_status = get_user_meta( $user->ID, '_cr_email_verified', true );
 
@@ -171,6 +208,14 @@ class CR_Login {
 	}
 
 	private function send_password_reset( $identifier, $reset_page = '' ) {
+		$throttle_key = $this->get_reset_throttle_key();
+
+		if ( false !== get_transient( $throttle_key ) ) {
+			return true;
+		}
+
+		set_transient( $throttle_key, 1, self::RESET_REQUEST_LOCKOUT );
+
 		$user = $this->find_user( $identifier );
 
 		if ( ! $user ) {
