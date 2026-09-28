@@ -97,7 +97,18 @@ class CR_Email_Verification {
 			return true;
 		}
 
-		return $this->send_verification( $user->ID );
+		$result = $this->send_verification( $user->ID );
+
+		if ( is_wp_error( $result ) ) {
+			if ( 'verification_mail' === $result->get_error_code() ) {
+				do_action( 'cr_email_verification_send_failed', $user->ID );
+				return true;
+			}
+
+			return $result;
+		}
+
+		return true;
 	}
 
 	public function ajax_resend_verification() {
