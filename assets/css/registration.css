@@ -48,3 +48,34 @@
 .cr-notice {
 	margin: 20px 0;
 }
+
+.cr-password {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.cr-password input {
+	flex: 1;
+	padding-right: 70px;
+}
+
+.cr-password__toggle {
+	position: absolute;
+	right: 8px;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.cr-submit__loading {
+	display: none;
+}
+
+.cr-submit.is-loading .cr-submit__text {
+	display: none;
+}
+
+.cr-submit.is-loading .cr-submit__loading {
+	display: inline;
+}
